@@ -6,9 +6,11 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\WatchlistController;
 use App\Http\Controllers\UserRelationshipController;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\ImageUploadController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AnimeController::class, 'index'])->name('home');
+Route::get('/anime', [AnimeController::class, 'index'])->name('anime.index');
 Route::get('/anime/{anime}', [AnimeController::class, 'show'])->name('anime.show');
 Route::get('/anime/random', [AnimeController::class, 'random'])->name('anime.random');
 Route::get('/anime/compare', [AnimeController::class, 'compareForm'])->name('anime.compare.form');
@@ -57,5 +59,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('/admin/news/{news}', [NewsController::class, 'destroy'])->name('news.admin.destroy');
     });
 });
+
+// Image upload and display routes
+Route::post('/upload', [ImageUploadController::class, 'upload']);
+Route::get('/image/{type}/{filename}', [ImageUploadController::class, 'show'])->name('image.show');
+Route::view('/demo', 'image_demo');
 
 require __DIR__.'/auth.php';

@@ -48,12 +48,12 @@
                         <div>
                             <p class="text-gray-600 dark:text-gray-300"><span class="font-bold">ซีซั่น:</span> {{ $anime->season ?: 'ไม่ระบุ' }}</p>
                             <p class="text-gray-600 dark:text-gray-300"><span class="font-bold">สถานะ:</span> 
-                                @if($anime->status == 'not_yet_aired')
-                                    ยังไม่เริ่มฉาย
-                                @elseif($anime->status == 'currently_airing')
+                                @if($anime->status == 'currently_airing')
                                     กำลังออกอากาศ
-                                @else
+                                @elseif($anime->status == 'finished_airing')
                                     ฉายจบแล้ว
+                                @else
+                                    ยังไม่เริ่มฉาย
                                 @endif
                             </p>
                         </div>

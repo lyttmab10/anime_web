@@ -15,14 +15,11 @@
                     <x-nav-link :href="route('home')" :active="request()->routeIs('home')">
                         {{ __('หน้าแรก') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('anime.random')" :active="request()->routeIs('anime.random')">
-                        {{ __('สุ่มอนิเมะ') }}
-                    </x-nav-link>
                     <x-nav-link :href="route('search.index')" :active="request()->routeIs('search.index')">
                         {{ __('ค้นหา') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('anime.compare.form')" :active="request()->routeIs('anime.compare.form')">
-                        {{ __('เปรียบเทียบ') }}
+                    <x-nav-link :href="route('anime.index')" :active="request()->routeIs('anime.index')">
+                        {{ __('อนิเมะทั้งหมด') }}
                     </x-nav-link>
                     @auth
                     <x-nav-link :href="route('watchlist.index')" :active="request()->routeIs('watchlist.index')">

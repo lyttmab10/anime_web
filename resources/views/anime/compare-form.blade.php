@@ -28,26 +28,10 @@
                         @endforeach
                     </select>
                 </div>
-                
-                <div>
-                    <label for="anime3_id" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">อนิเมะที่สาม (ไม่บังคับ)</label>
-                    <select name="anime3_id" id="anime3_id" class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 dark:text-white">
-                        <option value="">เลือกอนิเมะ (ไม่บังคับ)</option>
-                        @foreach($animes as $anime)
-                            <option value="{{ $anime->id }}">{{ $anime->title }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                
-                <div>
-                    <label for="anime4_id" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">อนิเมะที่สี่ (ไม่บังคับ)</label>
-                    <select name="anime4_id" id="anime4_id" class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 dark:text-white">
-                        <option value="">เลือกอนิเมะ (ไม่บังคับ)</option>
-                        @foreach($animes as $anime)
-                            <option value="{{ $anime->id }}">{{ $anime->title }}</option>
-                        @endforeach
-                    </select>
-                </div>
+            </div>
+            
+            <div class="mt-6 text-center">
+                <p class="text-gray-600 dark:text-gray-400 italic">เลือกอนิเมะ 2 เรื่องที่คุณต้องการเปรียบเทียบ</p>
             </div>
             
             <div class="text-center pt-6">

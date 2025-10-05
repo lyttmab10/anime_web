@@ -12,6 +12,9 @@
     <!-- Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Alpine.js for dropdown functionality -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         body {
@@ -42,13 +45,36 @@
             <div class="container mx-auto px-4 py-6">
                 <div class="flex justify-between items-center">
                     <h1 class="text-3xl font-bold text-indigo-700">AnimeHub</h1>
-                    <nav>
-                        <ul class="flex space-x-6">
-                            <li><a href="#" class="text-gray-700 hover:text-indigo-600 font-medium">หน้าแรก</a></li>
-                            <li><a href="#" class="text-gray-700 hover:text-indigo-600 font-medium">ค้นหา</a></li>
-                            <li><a href="#" class="text-gray-700 hover:text-indigo-600 font-medium">หมวดหมู่</a></li>
-                            <li><a href="#" class="text-gray-700 hover:text-indigo-600 font-medium">เรตติ้งสูงสุด</a></li>
+                    <nav class="flex items-center space-x-4">
+                        <ul class="flex space-x-4 mr-6">
+                            <li><a href="{{ route('home') }}" class="text-gray-700 hover:text-indigo-600 font-medium">หน้าแรก</a></li>
+                            <li><a href="{{ route('search.index') }}" class="text-gray-700 hover:text-indigo-600 font-medium">ค้นหา</a></li>
+                            <li><a href="#listings-section" class="text-gray-700 hover:text-indigo-600 font-medium">อนิเมะทั้งหมด</a></li>
                         </ul>
+                        @auth
+                            <div class="relative" x-data="{ open: false }">
+                                <button @click="open = !open" class="flex items-center space-x-1 text-gray-700 hover:text-indigo-600">
+                                    <span>{{ Auth::user()->name }}</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50" style="display: none;">
+                                    <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">แดชบอร์ด</a>
+                                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">โปรไฟล์</a>
+                                    <a href="{{ route('watchlist.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ลิสต์ของฉัน</a>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ออกจากระบบ</button>
+                                    </form>
+                                </div>
+                            </div>
+                        @else
+                            <div class="flex items-center space-x-4">
+                                <a href="{{ route('login') }}" class="text-sm text-gray-700 hover:text-indigo-600 font-medium">เข้าสู่ระบบ</a>
+                                <a href="{{ route('register') }}" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">สมัครสมาชิก</a>
+                            </div>
+                        @endauth
                     </nav>
                 </div>
             </div>
@@ -78,7 +104,13 @@
                     <div class="anime-card bg-white rounded-lg shadow-md overflow-hidden max-w-4xl mx-auto">
                         <div class="md:flex">
                             <div class="md:w-1/3">
-                                <div class="bg-gray-200 border-2 border-dashed w-full h-64 md:h-full" />
+                                @if($featuredAnime->image_url)
+                                    <img src="{{ asset($featuredAnime->image_url) }}" alt="{{ $featuredAnime->title }}" class="w-full h-64 md:h-full object-cover" />
+                                @else
+                                    <div class="bg-gray-200 border-2 border-dashed w-full h-64 md:h-full flex items-center justify-center">
+                                        <span class="text-gray-500">No Image</span>
+                                    </div>
+                                @endif
                             </div>
                             <div class="p-6 md:w-2/3">
                                 <h3 class="font-bold text-2xl mb-2">{{ $featuredAnime->title }}</h3>
@@ -100,9 +132,9 @@
                                         <span class="ml-3 bg-red-500 text-white text-xs px-2 py-1 rounded">HOT</span>
                                     @endif
                                 </div>
-                                <button class="bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700 transition">
+                                <a href="{{ route('anime.show', $featuredAnime->id) }}" class="bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700 transition inline-block">
                                     ดูรายละเอียด
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -126,9 +158,9 @@
                         <div class="anime-card bg-white rounded-lg shadow-md overflow-hidden flex flex-col h-full">
                             <div class="relative">
                                 @if($anime->image_url)
-                                    <img src="{{ $anime->image_url }}" alt="{{ $anime->title }}" class="w-full h-48 object-cover rounded-t-lg" />
+                                    <img src="{{ asset($anime->image_url) }}" alt="{{ $anime->title }}" class="w-full h-48 object-cover" />
                                 @else
-                                    <div class="bg-gray-200 border-2 border-dashed rounded-t-lg w-full h-48 flex items-center justify-center">
+                                    <div class="bg-gray-200 border-2 border-dashed w-full h-48 flex items-center justify-center">
                                         <span class="text-gray-500">No Image</span>
                                     </div>
                                 @endif
@@ -136,22 +168,86 @@
                                     <span class="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">มาแรง</span>
                                 @endif
                             </div>
-                            <div class="p-4 flex-grow">
-                                <h3 class="font-bold text-lg mb-1 truncate" title="{{ $anime->title }}">{{ $anime->title }}</h3>
+                            <div class="p-4 flex-grow flex flex-col">
+                                <h3 class="font-bold text-lg mb-1 truncate" title="{{ $anime->title }}"><a href="{{ route('anime.show', $anime->id) }}" class="hover:text-indigo-600">{{ $anime->title }}</a></h3>
                                 <p class="text-gray-600 text-sm mb-2">
                                     @if($anime->release_date)
                                         {{ $anime->release_date->format('Y') }}
                                     @endif
                                 </p>
-                                <div class="flex items-center mt-auto">
-                                    <span class="text-yellow-500 mr-1">★</span>
-                                    <span>{{ $anime->rating }}/10</span>
+                                <p class="text-gray-600 text-sm mb-2 flex-grow">
+                                    @if($anime->description)
+                                        {{ Str::limit($anime->description, 200) }}
+                                    @else
+                                        ไม่มีคำอธิบาย
+                                    @endif
+                                </p>
+                                <div class="flex items-center justify-between mt-auto">
+                                    <div class="flex items-center">
+                                        <span class="text-yellow-500 mr-1">★</span>
+                                        <span>{{ $anime->rating }}/10</span>
+                                    </div>
+                                    <a href="{{ route('anime.show', $anime->id) }}" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700 transition">รายละเอียด</a>
                                 </div>
                             </div>
                         </div>
                     @empty
                         <div class="col-span-4 text-center py-8">
                             <p class="text-gray-500">ไม่พบอนิเมะที่มาแรงหรือเพิ่งออกใหม่</p>
+                        </div>
+                    @endforelse
+                </div>
+            </section>
+
+            <!-- Anime Listings Section (30 items) -->
+            <section id="listings-section" class="mb-12">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">รายการอนิเมะ</h2>
+                    <a href="{{ route('anime.index') }}" class="text-indigo-600 hover:text-indigo-800 font-medium">ดูทั้งหมด</a>
+                </div>
+                
+                <!-- Grid of 30 anime listings - 5 columns x 6 rows -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                    @forelse($animeListings as $anime)
+                        <div class="anime-card bg-white rounded-lg shadow-md overflow-hidden flex flex-col h-full">
+                            <div class="relative">
+                                @if($anime->image_url)
+                                    <img src="{{ asset($anime->image_url) }}" alt="{{ $anime->title }}" class="w-full h-48 object-cover" />
+                                @else
+                                    <div class="bg-gray-200 border-2 border-dashed w-full h-48 flex items-center justify-center">
+                                        <span class="text-gray-500">No Image</span>
+                                    </div>
+                                @endif
+                                @if($anime->is_trending)
+                                    <span class="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">มาแรง</span>
+                                @endif
+                            </div>
+                            <div class="p-4 flex-grow flex flex-col">
+                                <h3 class="font-bold text-lg mb-1 truncate" title="{{ $anime->title }}"><a href="{{ route('anime.show', $anime->id) }}" class="hover:text-indigo-600">{{ $anime->title }}</a></h3>
+                                <p class="text-gray-600 text-sm mb-2">
+                                    @if($anime->release_date)
+                                        {{ $anime->release_date->format('Y') }}
+                                    @endif
+                                </p>
+                                <p class="text-gray-600 text-sm mb-2 flex-grow">
+                                    @if($anime->description)
+                                        {{ Str::limit($anime->description, 200) }}
+                                    @else
+                                        ไม่มีคำอธิบาย
+                                    @endif
+                                </p>
+                                <div class="flex items-center justify-between mt-auto">
+                                    <div class="flex items-center">
+                                        <span class="text-yellow-500 mr-1">★</span>
+                                        <span>{{ $anime->rating }}/10</span>
+                                    </div>
+                                    <a href="{{ route('anime.show', $anime->id) }}" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700 transition">รายละเอียด</a>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="col-span-5 text-center py-8">
+                            <p class="text-gray-500">ไม่พบอนิเมะ</p>
                         </div>
                     @endforelse
                 </div>
@@ -201,6 +297,17 @@
                         <h3 class="font-bold text-xl mb-2 text-gray-800">คอมเมดี้</h3>
                         <p class="text-gray-600">30 ซีรีส์</p>
                     </div>
+                </div>
+            </section>
+            
+            <!-- Compare Section -->
+            <section class="mt-12 text-center">
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-8 text-white">
+                    <h2 class="text-2xl font-bold mb-4">เปรียบเทียบอนิเมะที่คุณชื่นชอบ</h2>
+                    <p class="mb-6 max-w-2xl mx-auto">เปรียบเทียบคุณสมบัติของอนิเมะต่างๆ เพื่อหาเรื่องที่ใช่ที่สุดสำหรับคุณ</p>
+                    <a href="{{ route('anime.compare.form') }}" class="bg-white text-indigo-600 font-bold py-3 px-8 rounded-lg shadow hover:bg-gray-100 transition inline-block">
+                        เริ่มเปรียบเทียบ
+                    </a>
                 </div>
             </section>
         </main>
