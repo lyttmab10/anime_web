@@ -3,10 +3,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="text-center mb-12">
-        <h1 class="text-4xl font-bold text-gray-800 dark:text-white mb-4">ค้นหาอนิเมะเรื่องใหม่ของคุณ</h1>
-        <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            รับคำแนะนำอนิเมะส่วนตัวตามความชอบของคุณและค้นพบซีรีส์ยอดนิยม
-        </p>
+        <h1 class="text-5xl font-bold text-gray-800 dark:text-white mb-4">อนิเมะสำหรับ คุณ</h1>
         
         <!-- Random Anime Button -->
         <div class="mt-6">
@@ -23,7 +20,7 @@
     <!-- Featured Anime Section -->
     <section class="mb-12">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">อนิเมะแห่งวัน</h2>
+            <h2 class="text-3xl font-extrabold text-indigo-700 dark:text-indigo-300 border-b-2 border-indigo-500 dark:border-indigo-700 pb-2">อนิเมะแห่งวัน</h2>
             <button id="refreshRecommendation" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium">
                 สุ่มใหม่
             </button>
@@ -31,7 +28,7 @@
         
         <!-- Single featured anime -->
         @if($featuredAnime ?? null)
-            <div class="anime-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden max-w-4xl mx-auto">
+            <div class="anime-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden max-w-4xl mx-auto relative">
                 <div class="md:flex">
                     <div class="md:w-1/3">
                         <div class="bg-gray-200 dark:bg-gray-700 border-2 border-dashed w-full h-64 md:h-full" />
@@ -56,11 +53,11 @@
                                 <span class="ml-3 bg-red-500 text-white text-xs px-2 py-1 rounded">HOT</span>
                             @endif
                         </div>
-                        <button class="bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700 transition">
-                            ดูรายละเอียด
-                        </button>
                     </div>
                 </div>
+                <a href="{{ route('anime.show', $featuredAnime->id) }}" class="absolute bottom-4 right-4 bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700 transition">
+                    ดูรายละเอียด
+                </a>
             </div>
         @else
             <div class="text-center py-8">
@@ -72,7 +69,7 @@
     <!-- Trending/Recently Added Section -->
     <section class="mb-12">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">มาแรงและเพิ่งออกใหม่</h2>
+            <h2 class="text-3xl font-extrabold text-indigo-700 dark:text-indigo-300 border-b-2 border-indigo-500 dark:border-indigo-700 pb-2">มาแรงและเพิ่งออกใหม่</h2>
             <a href="#" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium">ดูทั้งหมด</a>
         </div>
         

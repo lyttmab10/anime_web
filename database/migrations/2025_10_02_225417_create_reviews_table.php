@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('anime_id')->constrained()->onDelete('cascade');
-            $table->integer('rating')->nullable(); // Rating from 1 to 10
+            $table->integer('rating')->nullable(); // Rating from 1 to 5 (stars)
             $table->text('review')->nullable(); // Review text
             $table->integer('likes')->default(0); // For upvotes
             $table->integer('dislikes')->default(0); // For downvotes

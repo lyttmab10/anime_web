@@ -22,5 +22,8 @@ class DatabaseSeeder extends Seeder
 
         // Call the AnimeSeeder
         $this->call(AnimeSeeder::class);
+        
+        // Call the ReviewSeeder after AnimeSeeder
+        $this->call(ReviewSeeder::class);
     }
 }

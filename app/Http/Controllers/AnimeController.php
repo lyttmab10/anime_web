@@ -16,36 +16,35 @@ class AnimeController extends Controller
             // Get one random anime for "Anime of the Day"
             $featuredAnime = Anime::inRandomOrder()->first();
             
-            // Get trending and new release anime for the 4x5 grid (20 items)
-            // First, get trending anime ordered by rating
-            $trendingAnimes = Anime::where('is_trending', true)
+            // Get only trending anime for the grid (20 items)
+            $trendingAndRecentAnimes = Anime::where('is_trending', true)
                 ->orderByRaw("CASE 
                     WHEN title = 'ดาบพิฆาตอสูร' THEN 1
                     WHEN title = 'โจมตียักษ์' THEN 2
                     ELSE 3
                 END")
                 ->orderBy('rating', 'desc')
-                ->limit(10)
+                ->limit(20)
                 ->get();
-            
-            // Then, get recently added anime (not already in trending list) if we need more to fill the grid
-            $recentAnimes = collect();
-            $neededCount = 20 - $trendingAnimes->count();
-            
-            if ($neededCount > 0) {
-                $recentAnimes = Anime::where('is_trending', false)
-                    ->orderBy('release_date', 'desc')
-                    ->limit($neededCount)
-                    ->get();
-            }
-            
-            // Combine trending and recent anime to make 20 items
-            $trendingAndRecentAnimes = $trendingAnimes->concat($recentAnimes)->take(20);
             
             // Get 30 anime listings for the new section
             $animeListings = Anime::orderBy('rating', 'desc')->limit(30)->get();
+            
+            // Get all unique genres for the category section
+            $allGenres = Anime::select('genres')
+                ->whereNotNull('genres')
+                ->get()
+                ->pluck('genres')
+                ->filter(function ($genres) {
+                    return !is_null($genres) && !empty($genres) && is_array($genres);
+                })
+                ->flatten()
+                ->unique()
+                ->values()
+                ->sort()
+                ->all();
 
-            return view('anime.home', compact('featuredAnime', 'trendingAndRecentAnimes', 'animeListings'));
+            return view('anime.home', compact('featuredAnime', 'trendingAndRecentAnimes', 'animeListings', 'allGenres'));
         } else {
             // For the all anime page, just return all anime ordered by rating
             $animes = Anime::orderBy('rating', 'desc')->paginate(24);
@@ -89,6 +88,11 @@ class AnimeController extends Controller
     
     public function show(Anime $anime)
     {
+        // Load anime with reviews and users
+        $anime = Anime::with(['reviews' => function($query) {
+            $query->with('user')->latest();
+        }])->where('id', $anime->id)->first();
+        
         // Get similar anime based on genres
         $similarAnime = collect();
         if ($anime->genres && is_array($anime->genres)) {

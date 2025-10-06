@@ -15,8 +15,8 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <!-- Styles -->
+        <script src="https://cdn.tailwindcss.com"></script>
         
         <script>
             // Initialize dark mode
@@ -27,6 +27,12 @@
                 document.documentElement.classList.remove('dark');
             }
         </script>
+        
+        <style>
+            body {
+                font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+            }
+        </style>
     </head>
     <body class="font-sans antialiased h-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">

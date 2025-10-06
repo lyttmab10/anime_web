@@ -35,7 +35,7 @@ class Anime extends Model
     // Relationship with Reviews
     public function reviews()
     {
-        return $this->hasMany(Review::class);
+        return $this->hasMany(Review::class)->with('user')->latest();
     }
     
     // Calculate average rating from reviews

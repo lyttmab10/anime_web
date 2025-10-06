@@ -7,6 +7,7 @@ use App\Http\Controllers\WatchlistController;
 use App\Http\Controllers\UserRelationshipController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ImageUploadController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AnimeController::class, 'index'])->name('home');
@@ -48,6 +49,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/user/{user}/following', [UserRelationshipController::class, 'followingPage'])->name('user.following');
     Route::get('/user/{user}/followers', [UserRelationshipController::class, 'followersPage'])->name('user.followers');
     Route::get('/user/pending-requests', [UserRelationshipController::class, 'friendRequestsPage'])->name('user.pending.requests');
+    
+    // Review routes
+    Route::post('/anime/{anime}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::delete('/anime/{anime}/reviews', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::post('/anime/{anime}/reviews/like', [ReviewController::class, 'like'])->name('reviews.like');
+    Route::post('/anime/{anime}/reviews/dislike', [ReviewController::class, 'dislike'])->name('reviews.dislike');
     
     // Admin news routes - only for users who can manage news
     Route::middleware(['can:create,App\Models\News'])->group(function () {

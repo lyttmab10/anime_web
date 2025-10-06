@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Anime;
+use Illuminate\Support\Facades\DB;
 
 class SearchController extends Controller
 {
@@ -11,6 +12,7 @@ class SearchController extends Controller
     {
         $query = $request->input('q', '');
         $genre = $request->input('genre', '');
+        $genres = $request->input('genres', []);
         $year = $request->input('year', '');
         $season = $request->input('season', '');
         $studio = $request->input('studio', '');
@@ -26,9 +28,15 @@ class SearchController extends Controller
             });
         }
         
-        // Filter by genre
+        // Filter by genre - support both single genre and multiple genres
         if (!empty($genre)) {
             $animes = $animes->whereJsonContains('genres', $genre);
+        } elseif (!empty($genres)) {
+            foreach ($genres as $selectedGenre) {
+                if (!empty($selectedGenre)) {
+                    $animes = $animes->whereJsonContains('genres', $selectedGenre);
+                }
+            }
         }
         
         // Filter by year
@@ -53,26 +61,36 @@ class SearchController extends Controller
                      ->whereNotNull('release_date')
                      ->distinct()
                      ->pluck('year')
-                     ->sort()->values();
+                     ->sort()
+                     ->values()
+                     ->all();
         
         // Get all unique genres for the filter dropdown
-        $genres = Anime::selectRaw('JSON_EXTRACT(genres, "$[*]") as genre')
-                      ->pluck('genre')
-                      ->flatten()
-                      ->unique()
-                      ->filter()
-                      ->values();
+        $allGenres = Anime::select('genres')
+            ->whereNotNull('genres')
+            ->get()
+            ->pluck('genres')
+            ->filter(function ($genres) {
+                return !is_null($genres) && !empty($genres) && is_array($genres);
+            })
+            ->flatten()
+            ->unique()
+            ->values()
+            ->sort()
+            ->all();
         
         // Get all unique seasons for the filter dropdown
         $seasons = Anime::whereNotNull('season')
                        ->distinct()
-                       ->pluck('season');
+                       ->pluck('season')
+                       ->all();
         
         // Get all unique studios for the filter dropdown
         $studios = Anime::whereNotNull('studio')
                        ->distinct()
-                       ->pluck('studio');
+                       ->pluck('studio')
+                       ->all();
         
-        return view('search.index', compact('animes', 'query', 'genre', 'year', 'season', 'studio', 'years', 'genres', 'seasons', 'studios'));
+        return view('search.index', compact('animes', 'query', 'genre', 'genres', 'year', 'season', 'studio', 'years', 'allGenres', 'seasons', 'studios'));
     }
 }

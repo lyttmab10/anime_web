@@ -48,8 +48,8 @@
                     <nav class="flex items-center space-x-4">
                         <ul class="flex space-x-4 mr-6">
                             <li><a href="{{ route('home') }}" class="text-gray-700 hover:text-indigo-600 font-medium">หน้าแรก</a></li>
+                            <li><a href="{{ route('anime.index') }}" class="text-gray-700 hover:text-indigo-600 font-medium">อนิเมะทั้งหมด</a></li>
                             <li><a href="{{ route('search.index') }}" class="text-gray-700 hover:text-indigo-600 font-medium">ค้นหา</a></li>
-                            <li><a href="#listings-section" class="text-gray-700 hover:text-indigo-600 font-medium">อนิเมะทั้งหมด</a></li>
                         </ul>
                         @auth
                             <div class="relative" x-data="{ open: false }">
@@ -84,24 +84,21 @@
         <main class="container mx-auto px-4 py-8">
             <!-- Hero Section -->
             <section class="mb-12 text-center">
-                <h1 class="text-4xl font-bold text-gray-800 mb-4">ค้นหาอนิเมะเรื่องใหม่ของคุณ</h1>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                    รับคำแนะนำอนิเมะส่วนตัวตามความชอบของคุณและค้นพบซีรีส์ยอดนิยม
-                </p>
+                <h1 class="text-5xl font-bold text-gray-800 mb-4">อนิเมะสำหรับ คุณ</h1>
             </section>
 
             <!-- Featured Anime Section -->
             <section class="mb-12">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">อนิเมะแห่งวัน</h2>
-                    <button id="refreshRecommendation" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                    <h2 class="text-3xl font-extrabold text-indigo-700 border-b-2 border-indigo-500 pb-2">สุ่มอนิเมะประจำวัน</h2>
+                    <button id="refreshRecommendation" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium">
                         สุ่มใหม่
                     </button>
                 </div>
                 
                 <!-- Single featured anime -->
                 @if($featuredAnime)
-                    <div class="anime-card bg-white rounded-lg shadow-md overflow-hidden max-w-4xl mx-auto">
+                    <div class="anime-card bg-white rounded-lg shadow-md overflow-hidden max-w-4xl mx-auto relative">
                         <div class="md:flex">
                             <div class="md:w-1/3">
                                 @if($featuredAnime->image_url)
@@ -121,22 +118,48 @@
                                         ไม่มีคำอธิบายสำหรับอนิเมะเรื่องนี้
                                     @endif
                                 </p>
-                                <div class="flex items-center mb-4">
+                                <div class="flex items-center mb-2">
                                     <span class="text-yellow-500 mr-1">★</span>
-                                    <span class="font-bold">{{ $featuredAnime->rating }}/10</span>
+                                    <span class="font-bold text-lg">{{ $featuredAnime->rating }}/10</span>
                                     @if($featuredAnime->release_date)
                                         <span class="mx-3">•</span>
-                                        <span>{{ $featuredAnime->release_date->format('Y') }}</span>
+                                        <span class="text-lg">{{ $featuredAnime->release_date->format('Y') }}</span>
                                     @endif
                                     @if($featuredAnime->is_trending)
-                                        <span class="ml-3 bg-red-500 text-white text-xs px-2 py-1 rounded">HOT</span>
+                                        <span class="ml-3 bg-red-500 text-white text-sm px-2 py-1 rounded">HOT</span>
                                     @endif
                                 </div>
-                                <a href="{{ route('anime.show', $featuredAnime->id) }}" class="bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700 transition inline-block">
-                                    ดูรายละเอียด
-                                </a>
+                                <div class="grid grid-cols-3 gap-3 mb-4">
+                                    <div class="text-sm py-2 px-3 bg-gray-100 dark:bg-gray-700 rounded">
+                                        <p class="text-gray-600 dark:text-gray-300"><span class="font-bold">สตูดิโอ:</span><br> {{ $featuredAnime->studio ?: '-' }}</p>
+                                    </div>
+                                    <div class="text-sm py-2 px-3 bg-gray-100 dark:bg-gray-700 rounded">
+                                        <p class="text-gray-600 dark:text-gray-300"><span class="font-bold">ตอน:</span><br> {{ $featuredAnime->episodes ?: '-' }}</p>
+                                    </div>
+                                    <div class="text-sm py-2 px-3 bg-gray-100 dark:bg-gray-700 rounded">
+                                        <p class="text-gray-600 dark:text-gray-300"><span class="font-bold">ซีซั่น:</span><br> {{ $featuredAnime->season ?: '-' }}</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Genres Section -->
+                                @if($featuredAnime->genres && is_array($featuredAnime->genres))
+                                    <div class="mb-4">
+                                        <h4 class="font-bold text-gray-700 mb-2">หมวดหมู่:</h4>
+                                        <div class="flex flex-wrap gap-2">
+                                            @foreach(array_slice($featuredAnime->genres, 0, 5) as $genre)
+                                                <span class="bg-indigo-100 text-indigo-800 text-sm px-3 py-1 rounded-full">{{ $genre }}</span>
+                                            @endforeach
+                                            @if(count($featuredAnime->genres) > 5)
+                                                <span class="bg-gray-100 text-gray-800 text-sm px-3 py-1 rounded-full">+{{ count($featuredAnime->genres) - 5 }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
+                        <a href="{{ route('anime.show', $featuredAnime->id) }}" class="absolute bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition">
+                            ดูรายละเอียด
+                        </a>
                     </div>
                 @else
                     <div class="text-center py-8">
@@ -148,8 +171,10 @@
             <!-- Trending/Recently Added Section -->
             <section class="mb-12">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">มาแรงและเพิ่งออกใหม่</h2>
-                    <a href="#" class="text-indigo-600 hover:text-indigo-800 font-medium">ดูทั้งหมด</a>
+                    <h2 class="text-3xl font-extrabold text-indigo-700 border-b-2 border-indigo-500 pb-2">อนิเมะมาแรง</h2>
+                    <a href="{{ route('anime.index') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium">
+                        ดูทั้งหมด
+                    </a>
                 </div>
                 
                 <!-- Grid of trending and recent anime - 4 columns x 5 rows -->
@@ -187,7 +212,7 @@
                                         <span class="text-yellow-500 mr-1">★</span>
                                         <span>{{ $anime->rating }}/10</span>
                                     </div>
-                                    <a href="{{ route('anime.show', $anime->id) }}" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700 transition">รายละเอียด</a>
+                                    <a href="{{ route('anime.show', $anime->id) }}" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition">รายละเอียด</a>
                                 </div>
                             </div>
                         </div>
@@ -202,8 +227,10 @@
             <!-- Anime Listings Section (30 items) -->
             <section id="listings-section" class="mb-12">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">รายการอนิเมะ</h2>
-                    <a href="{{ route('anime.index') }}" class="text-indigo-600 hover:text-indigo-800 font-medium">ดูทั้งหมด</a>
+                    <h2 class="text-3xl font-extrabold text-indigo-700 border-b-2 border-indigo-500 pb-2">รายการอนิเมะ</h2>
+                    <a href="{{ route('anime.index') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium">
+                        ดูทั้งหมด
+                    </a>
                 </div>
                 
                 <!-- Grid of 30 anime listings - 5 columns x 6 rows -->
@@ -241,7 +268,7 @@
                                         <span class="text-yellow-500 mr-1">★</span>
                                         <span>{{ $anime->rating }}/10</span>
                                     </div>
-                                    <a href="{{ route('anime.show', $anime->id) }}" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700 transition">รายละเอียด</a>
+                                    <a href="{{ route('anime.show', $anime->id) }}" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition">รายละเอียด</a>
                                 </div>
                             </div>
                         </div>
@@ -254,62 +281,36 @@
             </section>
 
             <!-- Categories Section -->
-            <section>
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">ค้นหาตามหมวดหมู่</h2>
+            <section id="categories-section">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">ค้นหาตามหมวดหมู่</h2>
+                    <a href="{{ route('search.index') }}" class="text-indigo-600 hover:text-indigo-800 font-medium">ดูทั้งหมด</a>
+                </div>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="category-card bg-white rounded-lg p-6 text-center shadow-md">
-                        <div class="bg-indigo-100 text-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                        </div>
-                        <h3 class="font-bold text-xl mb-2 text-gray-800">แอคชั่น</h3>
-                        <p class="text-gray-600">25 ซีรีส์</p>
-                    </div>
-                    
-                    <div class="category-card bg-white rounded-lg p-6 text-center shadow-md">
-                        <div class="bg-pink-100 text-pink-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                        </div>
-                        <h3 class="font-bold text-xl mb-2 text-gray-800">โรแมนติก</h3>
-                        <p class="text-gray-600">18 ซีรีส์</p>
-                    </div>
-                    
-                    <div class="category-card bg-white rounded-lg p-6 text-center shadow-md">
-                        <div class="bg-green-100 text-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <h3 class="font-bold text-xl mb-2 text-gray-800">ผจญภัย</h3>
-                        <p class="text-gray-600">22 ซีรีส์</p>
-                    </div>
-                    
-                    <div class="category-card bg-white rounded-lg p-6 text-center shadow-md">
-                        <div class="bg-yellow-100 text-yellow-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <h3 class="font-bold text-xl mb-2 text-gray-800">คอมเมดี้</h3>
-                        <p class="text-gray-600">30 ซีรีส์</p>
-                    </div>
+                <!-- Category cards grid - showing only 4 categories -->
+                <div id="category-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    @php
+                        $selectedGenres = ['Action', 'Adventure', 'Comedy', 'Drama'];
+                    @endphp
+                    @foreach($selectedGenres as $genre)
+                        @php
+                            $animeCount = App\Models\Anime::whereJsonContains('genres', $genre)->count();
+                        @endphp
+                        <a href="/search?genres%5B%5D={{ urlencode($genre) }}" class="category-card bg-white rounded-lg p-6 text-center shadow-md hover:shadow-lg transition-shadow block">
+                            <div class="bg-indigo-100 text-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                                </svg>
+                            </div>
+                            <h3 class="font-bold text-xl mb-2 text-gray-800">{{ $genre }}</h3>
+                            <p class="text-gray-600">{{ $animeCount }} ซีรีส์</p>
+                        </a>
+                    @endforeach
                 </div>
             </section>
             
             <!-- Compare Section -->
-            <section class="mt-12 text-center">
-                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-8 text-white">
-                    <h2 class="text-2xl font-bold mb-4">เปรียบเทียบอนิเมะที่คุณชื่นชอบ</h2>
-                    <p class="mb-6 max-w-2xl mx-auto">เปรียบเทียบคุณสมบัติของอนิเมะต่างๆ เพื่อหาเรื่องที่ใช่ที่สุดสำหรับคุณ</p>
-                    <a href="{{ route('anime.compare.form') }}" class="bg-white text-indigo-600 font-bold py-3 px-8 rounded-lg shadow hover:bg-gray-100 transition inline-block">
-                        เริ่มเปรียบเทียบ
-                    </a>
-                </div>
-            </section>
+
         </main>
 
         <!-- Footer -->
