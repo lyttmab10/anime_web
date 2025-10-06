@@ -12,6 +12,9 @@
     <!-- Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Alpine.js for dropdown functionality -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
@@ -27,6 +30,30 @@
         .anime-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+        }
+        .genre-container::before,
+        .genre-container::after {
+            display: none !important;
+            content: none !important;
+        }
+        .genre-container span::before,
+        .genre-container span::after {
+            display: none !important;
+            content: none !important;
+        }
+        .genre-container * {
+            position: relative;
+        }
+        .genre-container *::before,
+        .genre-container *::after {
+            display: none !important;
+            content: none !important;
+        }
+        /* Ensure no separator appears between genre span elements */
+        .genre-container [class*="flex"] span + span::before,
+        .genre-container [class*="flex"] span + span::after {
+            display: none !important;
+            content: none !important;
         }
     </style>
 </head>
@@ -52,9 +79,8 @@
                                     </svg>
                                 </button>
                                 <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50" style="display: none;">
-                                    <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">แดชบอร์ด</a>
                                     <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">โปรไฟล์</a>
-                                    <a href="{{ route('watchlist.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ลิสต์ของฉัน</a>
+                                    <a href="{{ route('watchlist.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ลิสต์อนิเมะ</a>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
                                         <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ออกจากระบบ</button>
@@ -145,7 +171,7 @@
                     </div>
                     
                     @if($anime->genres && is_array($anime->genres))
-                        <div class="mb-2">
+                        <div class="mb-2 genre-container">
                             <span class="font-bold text-gray-700 dark:text-gray-300 text-sm">แนว:</span>
                             <div class="flex flex-wrap gap-1 mt-1">
                                 @foreach($anime->genres as $genre)
@@ -259,10 +285,10 @@
                 @csrf
                 <div class="mb-4">
                     <label class="block text-gray-700 dark:text-gray-300 mb-2">ให้คะแนน</label>
-                    <div class="flex space-x-2">
+                    <div class="flex space-x-1">
                         @for($i = 1; $i <= 5; $i++)
-                            <button type="button" class="rating-btn w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-yellow-400 transition" data-rating="{{ $i }}">
-                                <span class="text-gray-700 dark:text-gray-300 text-xl">★</span>
+                            <button type="button" class="rating-btn text-2xl focus:outline-none" data-rating="{{ $i }}">
+                                <span class="star-icon text-gray-400 hover:text-yellow-500 cursor-pointer">☆</span>
                             </button>
                         @endfor
                     </div>
@@ -342,26 +368,7 @@
                             @if($review->review)
                             <p class="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">{{ $review->review }}</p>
                             @endif
-                            <div class="flex space-x-6 text-sm">
-                                <button class="like-btn flex items-center text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition" data-anime-id="{{ $anime->id }}" data-review-id="{{ $review->id }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905a3.61 3.61 0 01-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                                    </svg>
-                                    <span class="like-count">{{ $review->likes }} ถูกใจ</span>
-                                </button>
-                                <button class="dislike-btn flex items-center text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition" data-anime-id="{{ $anime->id }}" data-review-id="{{ $review->id }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 5v10m7-10v10m0 0h2a2 2 0 002-2v-6a2 2 0 00-2-2h-2.5" />
-                                    </svg>
-                                    <span class="dislike-count">{{ $review->dislikes }} ไม่ถูกใจ</span>
-                                </button>
-                                <button class="flex items-center text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                    </svg>
-                                    <span>ตอบกลับ</span>
-                                </button>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -425,20 +432,59 @@
         const ratingButtons = document.querySelectorAll('.rating-btn');
         const ratingInput = document.getElementById('rating-input');
         
-        // Update rating input and button appearance when a star is clicked
+        // Update rating input and star appearance when a star is clicked
         ratingButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const rating = parseInt(this.getAttribute('data-rating'));
                 ratingInput.value = rating;
                 
-                // Update the appearance of all buttons
-                ratingButtons.forEach((btn, index) => {
+                // Update the appearance of all stars
+                const allStars = document.querySelectorAll('.star-icon');
+                allStars.forEach((star, index) => {
                     if (index < rating) {
-                        btn.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'hover:bg-yellow-400');
-                        btn.classList.add('text-yellow-500');
+                        star.textContent = '★';  // Filled star
+                        star.className = 'star-icon text-yellow-500 cursor-pointer';
                     } else {
-                        btn.classList.remove('text-yellow-500');
-                        btn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'hover:bg-yellow-400');
+                        star.textContent = '☆';  // Empty star
+                        star.className = 'star-icon text-gray-400 hover:text-yellow-500 cursor-pointer';
+                    }
+                });
+            });
+        });
+        
+        // Add hover effect for stars
+        ratingButtons.forEach(button => {
+            button.addEventListener('mouseover', function() {
+                const currentRating = parseInt(this.getAttribute('data-rating'));
+                const allStars = document.querySelectorAll('.star-icon');
+                const selectedRating = parseInt(ratingInput.value);
+                
+                // Highlight stars up to current hover position
+                allStars.forEach((star, index) => {
+                    if (index < currentRating) {
+                        if (index >= selectedRating) {
+                            star.textContent = '★';
+                            star.className = 'star-icon text-yellow-400 cursor-pointer';
+                        }
+                    } else if (index >= selectedRating) {
+                        star.textContent = '☆';
+                        star.className = 'star-icon text-gray-400 cursor-pointer';
+                    }
+                });
+            });
+            
+            // Restore selection when mouse leaves
+            button.addEventListener('mouseout', function() {
+                const selectedRating = parseInt(ratingInput.value);
+                const allStars = document.querySelectorAll('.star-icon');
+                
+                allStars.forEach((star, index) => {
+                    if (index < selectedRating) {
+                        star.textContent = '★';
+                        star.className = 'star-icon text-yellow-500 cursor-pointer';
+                    } else {
+                        star.textContent = '☆';
+                        star.className = 'star-icon text-gray-400 hover:text-yellow-500 cursor-pointer';
                     }
                 });
             });

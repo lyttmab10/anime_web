@@ -52,34 +52,4 @@ class ReviewController extends Controller
         
         return redirect()->back()->with('success', 'รีวิวของคุณได้รับการลบแล้ว');
     }
-    
-    public function like(Anime $anime)
-    {
-        // Get the review ID from the request
-        $reviewId = request()->input('review_id');
-        
-        $review = Review::find($reviewId);
-            
-        if ($review && $review->user_id != Auth::id()) {
-            $review->increment('likes');
-            return response()->json(['likes' => $review->likes]);
-        }
-        
-        return response()->json(['error' => 'Review not found or you cannot like your own review'], 404);
-    }
-    
-    public function dislike(Anime $anime)
-    {
-        // Get the review ID from the request
-        $reviewId = request()->input('review_id');
-        
-        $review = Review::find($reviewId);
-            
-        if ($review && $review->user_id != Auth::id()) {
-            $review->increment('dislikes');
-            return response()->json(['dislikes' => $review->dislikes]);
-        }
-        
-        return response()->json(['error' => 'Review not found or you cannot dislike your own review'], 404);
-    }
 }

@@ -53,8 +53,6 @@ Route::middleware('auth')->group(function () {
     // Review routes
     Route::post('/anime/{anime}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
     Route::delete('/anime/{anime}/reviews', [ReviewController::class, 'destroy'])->name('reviews.destroy');
-    Route::post('/anime/{anime}/reviews/like', [ReviewController::class, 'like'])->name('reviews.like');
-    Route::post('/anime/{anime}/reviews/dislike', [ReviewController::class, 'dislike'])->name('reviews.dislike');
     
     // Admin news routes - only for users who can manage news
     Route::middleware(['can:create,App\Models\News'])->group(function () {
