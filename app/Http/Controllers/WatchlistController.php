@@ -13,14 +13,10 @@ class WatchlistController extends Controller
     {
         $watchlists = Watchlist::where('user_id', Auth::id())
             ->with('anime')
-            ->orderByRaw("FIELD(status, 'watching', 'on_hold', 'planned', 'dropped', 'completed')")
             ->orderBy('created_at', 'desc')
             ->get();
             
-        // Group by status
-        $groupedWatchlists = $watchlists->groupBy('status');
-        
-        return view('watchlist.index', compact('groupedWatchlists'));
+        return view('watchlist.index', compact('watchlists'));
     }
     
     public function store(Request $request)
@@ -94,6 +90,33 @@ class WatchlistController extends Controller
         return response()->json(['message' => 'Removed from watchlist successfully']);
     }
     
+    public function toggle(Request $request)
+    {
+        $request->validate([
+            'anime_id' => 'required|exists:animes,id',
+            'status' => 'required|in:watching,completed,planned,on_hold,dropped',
+        ]);
+
+        $existingWatchlist = Watchlist::where('user_id', Auth::id())
+            ->where('anime_id', $request->anime_id)
+            ->first();
+
+        if ($existingWatchlist) {
+            // ถ้ามีอยู่แล้ว ลบออก
+            $existingWatchlist->delete();
+            return response()->json(['added' => false, 'message' => 'Removed from watchlist successfully']);
+        } else {
+            // ถ้าไม่มี สร้างใหม่
+            $watchlist = Watchlist::create([
+                'user_id' => Auth::id(),
+                'anime_id' => $request->anime_id,
+                'status' => $request->status,
+                'progress' => 0,
+            ]);
+            return response()->json(['added' => true, 'message' => 'Added to watchlist successfully']);
+        }
+    }
+
     public function checkStatus($animeId)
     {
         $watchlist = Watchlist::where('user_id', Auth::id())

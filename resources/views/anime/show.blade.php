@@ -55,6 +55,19 @@
             display: none !important;
             content: none !important;
         }
+        
+        /* Dropdown menu styles */
+        .dropdown-menu {
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .dropdown-menu:not(.hidden) {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .dropdown-menu.hidden {
+            opacity: 0;
+            transform: translateY(-0.5rem);
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -63,7 +76,7 @@
         <header class="bg-white shadow">
             <div class="container mx-auto px-4 py-6">
                 <div class="flex justify-between items-center">
-                    <h1 class="text-3xl font-bold text-indigo-700">AnimeHub</h1>
+                    <a href="{{ route('home') }}" class="text-3xl font-bold text-indigo-700">AnimeHub</a>
                     <nav class="flex items-center space-x-4">
                         <ul class="flex space-x-4 mr-6">
                             <li><a href="{{ route('home') }}" class="text-gray-700 hover:text-indigo-600 font-medium">หน้าแรก</a></li>
@@ -127,10 +140,14 @@
                         </div>
                         
                         <div class="flex flex-wrap gap-2 mt-1">
-                            <button class="bg-indigo-600 text-white px-3 py-1.5 text-sm rounded hover:bg-indigo-700 transition">
-                                เพิ่มในลิสต์
-                            </button>
-                            <button class="bg-gray-600 dark:bg-gray-700 text-white px-3 py-1.5 text-sm rounded hover:bg-gray-700 dark:hover:bg-gray-600 transition">
+                            <button 
+    onclick="toggleWatchlist({{ $anime->id }})" 
+    id="watchlist-btn-{{ $anime->id }}" 
+    class="bg-indigo-600 text-white px-3 py-1.5 text-sm rounded hover:bg-indigo-700 transition"
+>
+    เพิ่มในลิสต์
+</button>
+                            <button onclick="document.getElementById('reviews').scrollIntoView({ behavior: 'smooth' });" class="bg-gray-600 dark:bg-gray-700 text-white px-3 py-1.5 text-sm rounded hover:bg-gray-700 dark:hover:bg-gray-600 transition">
                                 ให้คะแนน
                             </button>
                         </div>
@@ -202,25 +219,25 @@
                 </div>
             </div>
             
-            <div class="p-4 border-t dark:border-gray-700">
                 @if($anime->characters && is_array($anime->characters))
-                    <h2 class="font-bold text-lg mb-2 text-gray-800 dark:text-white">ตัวละครหลัก</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        @foreach(array_slice($anime->characters, 0, 8) as $character)
-                            <div class="bg-gray-50 dark:bg-gray-700 p-2 rounded text-center">
-                                <div class="bg-gray-200 dark:bg-gray-600 border-2 border-dashed rounded-full w-12 h-12 mx-auto mb-1" />
-                                <p class="font-medium text-xs text-gray-800 dark:text-white">{{ $character }}</p>
-                                <p class="text-[0.6rem] text-gray-600 dark:text-gray-400">นักพากย์</p>
-                            </div>
-                        @endforeach
+                    <div class="p-4 border-t dark:border-gray-700">
+                        <h2 class="font-bold text-lg mb-2 text-gray-800 dark:text-white">ตัวละครหลัก</h2>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            @foreach(array_slice($anime->characters, 0, 8) as $character)
+                                <div class="bg-gray-50 dark:bg-gray-700 p-2 rounded text-center">
+                                    <div class="bg-gray-200 dark:bg-gray-600 border-2 border-dashed rounded-full w-12 h-12 mx-auto mb-1" />
+                                    <p class="font-medium text-xs text-gray-800 dark:text-white">{{ $character }}</p>
+                                    <p class="text-[0.6rem] text-gray-600 dark:text-gray-400">นักพากย์</p>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
-                @endif>
-            </div>
+                @endif
         </div>
     </section>
 
     <!-- Reviews Section -->
-    <section class="mb-12">
+    <section id="reviews" class="mb-12">
         <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">รีวิวและเรตติ้ง</h2>
         
         <!-- Rating Summary -->
@@ -370,6 +387,30 @@
                             @endif
 
                         </div>
+                        @if(Auth::check() && Auth::id() == $review->user_id)
+                            <div class="relative inline-block text-left mt-2" x-data="{ open: false }">
+                                <button type="button" class="text-gray-500 hover:text-gray-700 text-sm" @click="open = !open; $event.stopPropagation()">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                    </svg>
+                                </button>
+                                <div x-show="open" @click.away="open = false" class="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5" style="display: none;">
+                                    <div class="py-1">
+                                        <button type="button" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" 
+                                            @click="openEditReviewModal({{ $review->id }}, {{ $review->rating }}, '{{ addslashes($review->review ?? '') }}'); open = false">
+                                            แก้ไข
+                                        </button>
+                                        <form method="POST" action="{{ route('reviews.destroy', $anime) }}" class="block" onsubmit="return confirm('คุณต้องการลบความคิดเห็นนี้ใช่หรือไม่?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                                ลบ
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 @endforeach
@@ -549,7 +590,172 @@
             }
         });
     });
+
+function showToast(message, isSuccess = true) {
+    const toast = document.createElement('div');
+    toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg text-white ${isSuccess ? 'bg-green-500' : 'bg-red-500'} transition-opacity duration-300`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    // ลบทิ้งหลัง 3 วินาที
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+
+async function toggleWatchlist(animeId) {
+    const btn = document.getElementById(`watchlist-btn-${animeId}`);
+    const currentText = btn.textContent;
+
+    try {
+        const response = await fetch('/watchlist/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                anime_id: animeId,
+                status: 'watching'
+            })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.added) {
+                btn.textContent = 'ลบจากลิสต์';
+                btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                btn.classList.add('bg-red-600', 'hover:bg-red-700');
+                showToast('เพิ่มในลิสต์แล้ว', true);
+            } else {
+                btn.textContent = 'เพิ่มในลิสต์';
+                btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                btn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                showToast('ลบออกจากลิสต์แล้ว', true);
+            }
+        } else {
+            alert('เกิดข้อผิดพลาด');
+        }
+    } catch (error) {
+        alert('เกิดข้อผิดพลาด');
+    }
+}
+
+// JavaScript สำหรับแก้ไขรีวิว
+function openEditReviewModal(reviewId, currentRating, currentReview) {
+    document.getElementById('edit-review-modal').classList.remove('hidden');
+    
+    // ตั้งค่าค่าเดิมใน modal
+    document.getElementById('edit-review-rating').value = currentRating;
+    document.getElementById('edit-review-text').value = currentReview;
+    
+    // ตั้งค่า rating stars
+    updateStars(currentRating);
+    
+    // ตั้งค่า action ของ form ให้ส่งไปที่ route แก้ไข
+    const form = document.getElementById('edit-review-form');
+    form.setAttribute('action', `/anime/{{ $anime->id }}/reviews`);
+}
+
+function updateStars(rating) {
+    const stars = document.querySelectorAll('#edit-rating-stars .star-icon');
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.textContent = '★';  // Filled star
+            star.className = 'star-icon text-yellow-500 cursor-pointer';
+        } else {
+            star.textContent = '☆';  // Empty star
+            star.className = 'star-icon text-gray-400 hover:text-yellow-500 cursor-pointer';
+        }
+    });
+}
+
+// จัดการการคลิกที่ดาวใน modal
+document.querySelectorAll('#edit-rating-stars .star-icon').forEach((star, index) => {
+    star.addEventListener('click', function() {
+        const rating = index + 1;
+        document.getElementById('edit-review-rating').value = rating;
+        updateStars(rating);
+    });
+});
+
+// ปิด modal เมื่อคลิกปุ่มปิดหรือพื้นหลัง
+function closeEditReviewModal() {
+    document.getElementById('edit-review-modal').classList.add('hidden');
+}
+
+// เพิ่ม CSRF token ให้กับ form แก้ไข
+document.getElementById('edit-review-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    formData.append('_method', 'PUT'); // เพิ่ม method override
+    
+    fetch(this.getAttribute('action'), {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.reload(); // โหลดหน้าใหม่เพื่อแสดงผล
+        } else {
+            alert('เกิดข้อผิดพลาดในการแก้ไขรีวิว');
+        }
+    })
+    .catch(error => {
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+    });
+});
+
 </script>
+
+        <!-- Modal แก้ไขรีวิว -->
+        <div id="edit-review-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-gray-800 dark:text-white">แก้ไขรีวิวของคุณ</h3>
+                    <button type="button" class="text-gray-500 hover:text-gray-700" onclick="closeEditReviewModal()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <form id="edit-review-form" method="POST">
+                    @csrf
+                    <input type="hidden" name="rating" id="edit-review-rating" value="5">
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 dark:text-gray-300 mb-2">ให้คะแนน</label>
+                        <div id="edit-rating-stars" class="flex space-x-1">
+                            @for($i = 1; $i <= 5; $i++)
+                                <span class="star-icon text-gray-400 hover:text-yellow-500 cursor-pointer text-2xl">☆</span>
+                            @endfor
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="edit-review-text" class="block text-gray-700 dark:text-gray-300 mb-2">รีวิว</label>
+                        <textarea id="edit-review-text" name="review" rows="4" class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 dark:text-white transition" placeholder="เขียนรีวิวของคุณที่นี่..."></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium" onclick="closeEditReviewModal()">
+                            ยกเลิก
+                        </button>
+                        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">
+                            บันทึกการแก้ไข
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <!-- Footer -->
         <footer class="bg-white border-t mt-12">

@@ -12,6 +12,10 @@
     <!-- Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Alpine.js for dropdown functionality -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         body {
             font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
@@ -44,17 +48,36 @@
         <header class="bg-white shadow">
             <div class="container mx-auto px-4 py-6">
                 <div class="flex justify-between items-center">
-                    <h1 class="text-3xl font-bold text-indigo-700">AnimeHub</h1>
+                    <a href="{{ route('home') }}" class="text-3xl font-bold text-indigo-700">AnimeHub</a>
                     <nav class="flex items-center space-x-4">
                         <ul class="flex space-x-4 mr-6">
-                            <li><a href="/" class="text-gray-700 hover:text-indigo-600 font-medium">หน้าแรก</a></li>
-                            <li><a href="/search" class="text-gray-700 hover:text-indigo-600 font-medium">ค้นหา</a></li>
-                            <li><a href="#" class="text-gray-700 hover:text-indigo-600 font-medium">หมวดหมู่</a></li>
+                            <li><a href="{{ route('home') }}" class="text-gray-700 hover:text-indigo-600 font-medium">หน้าแรก</a></li>
+                            <li><a href="{{ route('anime.index') }}" class="text-gray-700 hover:text-indigo-600 font-medium">อนิเมะทั้งหมด</a></li>
+                            <li><a href="{{ route('search.index') }}" class="text-indigo-700 font-medium bg-indigo-100 px-3 py-1 rounded">ค้นหา</a></li>
                         </ul>
-                        <div class="flex items-center space-x-4">
-                            <a href="/login" class="text-sm text-gray-700 hover:text-indigo-600 font-medium">เข้าสู่ระบบ</a>
-                            <a href="/register" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">สมัครสมาชิก</a>
-                        </div>
+                        @auth
+                            <div class="relative" x-data="{ open: false }">
+                                <button @click="open = !open" class="flex items-center space-x-1 text-gray-700 hover:text-indigo-600">
+                                    <span>{{ Auth::user()->name }}</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50" style="display: none;">
+                                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">โปรไฟล์</a>
+                                    <a href="{{ route('watchlist.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ลิสต์ของฉัน</a>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ออกจากระบบ</button>
+                                    </form>
+                                </div>
+                            </div>
+                        @else
+                            <div class="flex items-center space-x-4">
+                                <a href="{{ route('login') }}" class="text-sm text-gray-700 hover:text-indigo-600 font-medium">เข้าสู่ระบบ</a>
+                                <a href="{{ route('register') }}" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">สมัครสมาชิก</a>
+                            </div>
+                        @endauth
                     </nav>
                 </div>
             </div>

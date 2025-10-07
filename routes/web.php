@@ -24,7 +24,7 @@ Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        return redirect('/');
     })->name('dashboard');
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
     
     Route::get('/watchlist', [WatchlistController::class, 'index'])->name('watchlist.index');
     Route::post('/watchlist', [WatchlistController::class, 'store'])->name('watchlist.store');
+    Route::post('/watchlist/toggle', [WatchlistController::class, 'toggle'])->name('watchlist.toggle');
     Route::put('/watchlist/{watchlist}', [WatchlistController::class, 'update'])->name('watchlist.update');
     Route::delete('/watchlist/{watchlist}', [WatchlistController::class, 'destroy'])->name('watchlist.destroy');
     Route::get('/watchlist/check/{animeId}', [WatchlistController::class, 'checkStatus'])->name('watchlist.check');
@@ -52,6 +53,7 @@ Route::middleware('auth')->group(function () {
     
     // Review routes
     Route::post('/anime/{anime}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::put('/anime/{anime}/reviews', [ReviewController::class, 'update'])->name('reviews.update');
     Route::delete('/anime/{anime}/reviews', [ReviewController::class, 'destroy'])->name('reviews.destroy');
     
     // Admin news routes - only for users who can manage news

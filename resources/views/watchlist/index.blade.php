@@ -12,6 +12,9 @@
     <!-- Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Alpine.js for dropdown functionality -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         body {
@@ -45,14 +48,36 @@
         <header class="bg-white shadow">
             <div class="container mx-auto px-4 py-6">
                 <div class="flex justify-between items-center">
-                    <h1 class="text-3xl font-bold text-indigo-700">AnimeHub</h1>
-                    <nav>
-                        <ul class="flex space-x-6">
-                            <li><a href="/" class="text-gray-700 hover:text-indigo-600 font-medium">หน้าแรก</a></li>
+                    <a href="{{ route('home') }}" class="text-3xl font-bold text-indigo-700">AnimeHub</a>
+                    <nav class="flex items-center space-x-4">
+                        <ul class="flex space-x-4 mr-6">
+                            <li><a href="{{ route('home') }}" class="text-gray-700 hover:text-indigo-600 font-medium">หน้าแรก</a></li>
+                            <li><a href="{{ route('anime.index') }}" class="text-gray-700 hover:text-indigo-600 font-medium">อนิเมะทั้งหมด</a></li>
                             <li><a href="{{ route('search.index') }}" class="text-gray-700 hover:text-indigo-600 font-medium">ค้นหา</a></li>
-                            <li><a href="{{ route('watchlist.index') }}" class="text-indigo-700 font-medium bg-indigo-100 px-3 py-1 rounded">ลิสต์ของฉัน</a></li>
-                            <li><a href="#" class="text-gray-700 hover:text-indigo-600 font-medium">เรตติ้งสูงสุด</a></li>
                         </ul>
+                        @auth
+                            <div class="relative" x-data="{ open: false }">
+                                <button @click="open = !open" class="flex items-center space-x-1 text-gray-700 hover:text-indigo-600">
+                                    <span>{{ Auth::user()->name }}</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50" style="display: none;">
+                                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">โปรไฟล์</a>
+                                    <a href="{{ route('watchlist.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ลิสต์ของฉัน</a>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ออกจากระบบ</button>
+                                    </form>
+                                </div>
+                            </div>
+                        @else
+                            <div class="flex items-center space-x-4">
+                                <a href="{{ route('login') }}" class="text-sm text-gray-700 hover:text-indigo-600 font-medium">เข้าสู่ระบบ</a>
+                                <a href="{{ route('register') }}" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">สมัครสมาชิก</a>
+                            </div>
+                        @endauth
                     </nav>
                 </div>
             </div>
@@ -60,273 +85,72 @@
 
         <!-- Main Content -->
         <main class="container mx-auto px-4 py-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-8">ลิสต์อนิเมะของคุณ</h1>
+            <h1 class="text-3xl font-bold text-gray-800 mb-8">ลิสต์ของฉัน</h1>
             
-            <!-- Tabs for different statuses -->
-            <div class="flex border-b border-gray-200 mb-8">
-                <button class="tab-button px-4 py-2 font-medium text-gray-600 hover:text-indigo-600 border-b-2 border-transparent hover:border-indigo-500" data-tab="watching">
-                    กำลังดู <span class="bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-xs ml-2">{{ $groupedWatchlists->get('watching', collect())->count() }}</span>
-                </button>
-                <button class="tab-button px-4 py-2 font-medium text-gray-600 hover:text-indigo-600 border-b-2 border-transparent hover:border-indigo-500" data-tab="completed">
-                    ดูแล้ว <span class="bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-xs ml-2">{{ $groupedWatchlists->get('completed', collect())->count() }}</span>
-                </button>
-                <button class="tab-button px-4 py-2 font-medium text-gray-600 hover:text-indigo-600 border-b-2 border-transparent hover:border-indigo-500" data-tab="planned">
-                    อยากดู <span class="bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-xs ml-2">{{ $groupedWatchlists->get('planned', collect())->count() }}</span>
-                </button>
-                <button class="tab-button px-4 py-2 font-medium text-gray-600 hover:text-indigo-600 border-b-2 border-transparent hover:border-indigo-500" data-tab="on_hold">
-                    พักดูก่อน <span class="bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-xs ml-2">{{ $groupedWatchlists->get('on_hold', collect())->count() }}</span>
-                </button>
-                <button class="tab-button px-4 py-2 font-medium text-gray-600 hover:text-indigo-600 border-b-2 border-transparent hover:border-indigo-500" data-tab="dropped">
-                     dropped <span class="bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-xs ml-2">{{ $groupedWatchlists->get('dropped', collect())->count() }}</span>
-                </button>
-            </div>
-            
-            <!-- Watchlist Sections -->
-            <div id="watching-section" class="watchlist-section">
-                @if($groupedWatchlists->get('watching', collect())->count() > 0)
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        @foreach($groupedWatchlists->get('watching', collect()) as $watchlist)
-                        @php
-                            $anime = $watchlist->anime;
-                        @endphp
-                        <div class="anime-card bg-white rounded-lg shadow-md overflow-hidden">
-                            <div class="relative">
-                                @if($anime->image_url)
-                                    <img src="{{ $anime->image_url }}" alt="{{ $anime->title }}" class="w-full h-48 object-cover" />
-                                @else
-                                    <div class="bg-gray-200 border-2 border-dashed w-full h-48 flex items-center justify-center">
-                                        <span class="text-gray-500">No Image</span>
-                                    </div>
-                                @endif
-                                <span class="absolute top-2 right-2 status-badge status-watching">กำลังดู</span>
-                            </div>
-                            <div class="p-4">
-                                <h3 class="font-bold text-lg mb-1 truncate" title="{{ $anime->title }}">
-                                    <a href="{{ route('anime.show', $anime->id) }}" class="hover:text-indigo-600">{{ $anime->title }}</a>
-                                </h3>
-                                <div class="flex items-center mb-2">
-                                    <span class="text-yellow-500 mr-1">★</span>
-                                    <span>{{ $anime->rating }}/10</span>
+            <!-- All Watchlist Items -->
+            @if($watchlists->count() > 0)
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    @foreach($watchlists as $watchlist)
+                    @php
+                        $anime = $watchlist->anime;
+                        // ตั้งค่า status badge class
+                        $statusClass = match($watchlist->status) {
+                            'watching' => 'status-watching',
+                            'completed' => 'status-completed',
+                            'planned' => 'status-planned',
+                            'on_hold' => 'status-on_hold',
+                            'dropped' => 'status-dropped',
+                            default => 'status-watching'
+                        };
+                        $statusText = match($watchlist->status) {
+                            'watching' => 'กำลังดู',
+                            'completed' => 'ดูแล้ว',
+                            'planned' => 'อยากดู',
+                            'on_hold' => 'พักดูก่อน',
+                            'dropped' => 'dropped',
+                            default => 'กำลังดู'
+                        };
+                    @endphp
+                    <div class="anime-card bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="relative">
+                            @if($anime->image_url)
+                                <img src="{{ $anime->image_url }}" alt="{{ $anime->title }}" class="w-full h-48 object-cover" />
+                            @else
+                                <div class="bg-gray-200 border-2 border-dashed w-full h-48 flex items-center justify-center">
+                                    <span class="text-gray-500">No Image</span>
                                 </div>
-                                
-                                <!-- Progress bar -->
-                                <div class="mb-3">
-                                    <div class="flex justify-between text-sm mb-1">
-                                        <span>ความคืบหน้า</span>
-                                        <span>{{ $watchlist->progress }}/{{ $anime->episodes ?: '?' }}</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ $anime->episodes ? ($watchlist->progress / $anime->episodes) * 100 : 0 }}%"></div>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex space-x-2">
-                                    <button class="update-status-btn bg-indigo-100 text-indigo-700 text-xs px-3 py-1 rounded hover:bg-indigo-200" data-id="{{ $watchlist->id }}" data-status="completed">ดูจบแล้ว</button>
-                                    <button class="update-status-btn bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded hover:bg-gray-200" data-id="{{ $watchlist->id }}" data-status="on_hold">พักดูก่อน</button>
-                                </div>
-                                
-                                @if($watchlist->notes)
-                                    <p class="mt-3 text-sm text-gray-600 italic">หมายเหตุ: {{ $watchlist->notes }}</p>
-                                @endif
-                            </div>
+                            @endif
+                            <span class="absolute top-2 right-2 status-badge {{ $statusClass }}">{{ $statusText }}</span>
                         </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-12">
-                        <p class="text-gray-600">คุณยังไม่มีอนิเมะที่กำลังดูอยู่</p>
-                        <a href="{{ route('search.index') }}" class="text-indigo-600 hover:text-indigo-800 font-medium mt-4 inline-block">ค้นหาอนิเมะที่น่าสนใจ</a>
-                    </div>
-                @endif
-            </div>
-            
-            <div id="completed-section" class="watchlist-section hidden">
-                @if($groupedWatchlists->get('completed', collect())->count() > 0)
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        @foreach($groupedWatchlists->get('completed', collect()) as $watchlist)
-                        @php
-                            $anime = $watchlist->anime;
-                        @endphp
-                        <div class="anime-card bg-white rounded-lg shadow-md overflow-hidden">
-                            <div class="relative">
-                                @if($anime->image_url)
-                                    <img src="{{ $anime->image_url }}" alt="{{ $anime->title }}" class="w-full h-48 object-cover" />
-                                @else
-                                    <div class="bg-gray-200 border-2 border-dashed w-full h-48 flex items-center justify-center">
-                                        <span class="text-gray-500">No Image</span>
-                                    </div>
-                                @endif
-                                <span class="absolute top-2 right-2 status-badge status-completed">ดูแล้ว</span>
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg mb-1 truncate" title="{{ $anime->title }}">
+                                <a href="{{ route('anime.show', $anime->id) }}" class="hover:text-indigo-600">{{ $anime->title }}</a>
+                            </h3>
+                            <div class="flex items-center mb-2">
+                                <span class="text-yellow-500 mr-1">★</span>
+                                <span>{{ $anime->rating }}/10</span>
                             </div>
-                            <div class="p-4">
-                                <h3 class="font-bold text-lg mb-1 truncate" title="{{ $anime->title }}">
-                                    <a href="{{ route('anime.show', $anime->id) }}" class="hover:text-indigo-600">{{ $anime->title }}</a>
-                                </h3>
-                                <div class="flex items-center mb-2">
-                                    <span class="text-yellow-500 mr-1">★</span>
-                                    <span>{{ $anime->rating }}/10</span>
-                                </div>
-                                
-                                <div class="flex space-x-2">
-                                    <button class="update-status-btn bg-indigo-100 text-indigo-700 text-xs px-3 py-1 rounded hover:bg-indigo-200" data-id="{{ $watchlist->id }}" data-status="watching">ดูอีกครั้ง</button>
-                                    <button class="remove-btn bg-red-100 text-red-700 text-xs px-3 py-1 rounded hover:bg-red-200" data-id="{{ $watchlist->id }}">ลบออก</button>
-                                </div>
-                                
-                                @if($watchlist->notes)
-                                    <p class="mt-3 text-sm text-gray-600 italic">หมายเหตุ: {{ $watchlist->notes }}</p>
-                                @endif
+                            
+                            <!-- Description -->
+                            <p class="text-sm text-gray-600 mb-3 line-clamp-3">{{ $anime->description ?: 'ไม่มีข้อมูลเรื่องย่อ' }}</p>
+                            
+                            <div class="flex space-x-2">
+                                <button class="remove-btn bg-red-100 text-red-700 text-xs px-3 py-1 rounded hover:bg-red-200" data-id="{{ $watchlist->id }}">ลบออก</button>
                             </div>
+                            
+                            @if($watchlist->notes)
+                                <p class="mt-3 text-sm text-gray-600 italic">หมายเหตุ: {{ $watchlist->notes }}</p>
+                            @endif
                         </div>
-                        @endforeach
                     </div>
-                @else
-                    <div class="text-center py-12">
-                        <p class="text-gray-600">คุณยังไม่มีอนิเมะที่ดูจบแล้ว</p>
-                        <a href="{{ route('search.index') }}" class="text-indigo-600 hover:text-indigo-800 font-medium mt-4 inline-block">ค้นหาอนิเมะที่น่าสนใจ</a>
-                    </div>
-                @endif
-            </div>
-            
-            <div id="planned-section" class="watchlist-section hidden">
-                @if($groupedWatchlists->get('planned', collect())->count() > 0)
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        @foreach($groupedWatchlists->get('planned', collect()) as $watchlist)
-                        @php
-                            $anime = $watchlist->anime;
-                        @endphp
-                        <div class="anime-card bg-white rounded-lg shadow-md overflow-hidden">
-                            <div class="relative">
-                                @if($anime->image_url)
-                                    <img src="{{ $anime->image_url }}" alt="{{ $anime->title }}" class="w-full h-48 object-cover" />
-                                @else
-                                    <div class="bg-gray-200 border-2 border-dashed w-full h-48 flex items-center justify-center">
-                                        <span class="text-gray-500">No Image</span>
-                                    </div>
-                                @endif
-                                <span class="absolute top-2 right-2 status-badge status-planned">อยากดู</span>
-                            </div>
-                            <div class="p-4">
-                                <h3 class="font-bold text-lg mb-1 truncate" title="{{ $anime->title }}">
-                                    <a href="{{ route('anime.show', $anime->id) }}" class="hover:text-indigo-600">{{ $anime->title }}</a>
-                                </h3>
-                                <div class="flex items-center mb-2">
-                                    <span class="text-yellow-500 mr-1">★</span>
-                                    <span>{{ $anime->rating }}/10</span>
-                                </div>
-                                
-                                <div class="flex space-x-2">
-                                    <button class="update-status-btn bg-indigo-100 text-indigo-700 text-xs px-3 py-1 rounded hover:bg-indigo-200" data-id="{{ $watchlist->id }}" data-status="watching">เริ่มดู</button>
-                                    <button class="remove-btn bg-red-100 text-red-700 text-xs px-3 py-1 rounded hover:bg-red-200" data-id="{{ $watchlist->id }}">ลบออก</button>
-                                </div>
-                                
-                                @if($watchlist->notes)
-                                    <p class="mt-3 text-sm text-gray-600 italic">หมายเหตุ: {{ $watchlist->notes }}</p>
-                                @endif
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-12">
-                        <p class="text-gray-600">คุณยังไม่มีอนิเมะที่อยากดู</p>
-                        <a href="{{ route('search.index') }}" class="text-indigo-600 hover:text-indigo-800 font-medium mt-4 inline-block">ค้นหาอนิเมะที่น่าสนใจ</a>
-                    </div>
-                @endif
-            </div>
-            
-            <div id="on_hold-section" class="watchlist-section hidden">
-                @if($groupedWatchlists->get('on_hold', collect())->count() > 0)
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        @foreach($groupedWatchlists->get('on_hold', collect()) as $watchlist)
-                        @php
-                            $anime = $watchlist->anime;
-                        @endphp
-                        <div class="anime-card bg-white rounded-lg shadow-md overflow-hidden">
-                            <div class="relative">
-                                @if($anime->image_url)
-                                    <img src="{{ $anime->image_url }}" alt="{{ $anime->title }}" class="w-full h-48 object-cover" />
-                                @else
-                                    <div class="bg-gray-200 border-2 border-dashed w-full h-48 flex items-center justify-center">
-                                        <span class="text-gray-500">No Image</span>
-                                    </div>
-                                @endif
-                                <span class="absolute top-2 right-2 status-badge status-on_hold">พักดูก่อน</span>
-                            </div>
-                            <div class="p-4">
-                                <h3 class="font-bold text-lg mb-1 truncate" title="{{ $anime->title }}">
-                                    <a href="{{ route('anime.show', $anime->id) }}" class="hover:text-indigo-600">{{ $anime->title }}</a>
-                                </h3>
-                                <div class="flex items-center mb-2">
-                                    <span class="text-yellow-500 mr-1">★</span>
-                                    <span>{{ $anime->rating }}/10</span>
-                                </div>
-                                
-                                <div class="flex space-x-2">
-                                    <button class="update-status-btn bg-indigo-100 text-indigo-700 text-xs px-3 py-1 rounded hover:bg-indigo-200" data-id="{{ $watchlist->id }}" data-status="watching">กลับมาดูต่อ</button>
-                                    <button class="remove-btn bg-red-100 text-red-700 text-xs px-3 py-1 rounded hover:bg-red-200" data-id="{{ $watchlist->id }}">ลบออก</button>
-                                </div>
-                                
-                                @if($watchlist->notes)
-                                    <p class="mt-3 text-sm text-gray-600 italic">หมายเหตุ: {{ $watchlist->notes }}</p>
-                                @endif
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-12">
-                        <p class="text-gray-600">คุณยังไม่มีอนิเมะที่พักดูก่อน</p>
-                        <a href="{{ route('search.index') }}" class="text-indigo-600 hover:text-indigo-800 font-medium mt-4 inline-block">ค้นหาอนิเมะที่น่าสนใจ</a>
-                    </div>
-                @endif
-            </div>
-            
-            <div id="dropped-section" class="watchlist-section hidden">
-                @if($groupedWatchlists->get('dropped', collect())->count() > 0)
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        @foreach($groupedWatchlists->get('dropped', collect()) as $watchlist)
-                        @php
-                            $anime = $watchlist->anime;
-                        @endphp
-                        <div class="anime-card bg-white rounded-lg shadow-md overflow-hidden">
-                            <div class="relative">
-                                @if($anime->image_url)
-                                    <img src="{{ $anime->image_url }}" alt="{{ $anime->title }}" class="w-full h-48 object-cover" />
-                                @else
-                                    <div class="bg-gray-200 border-2 border-dashed w-full h-48 flex items-center justify-center">
-                                        <span class="text-gray-500">No Image</span>
-                                    </div>
-                                @endif
-                                <span class="absolute top-2 right-2 status-badge status-dropped">dropped</span>
-                            </div>
-                            <div class="p-4">
-                                <h3 class="font-bold text-lg mb-1 truncate" title="{{ $anime->title }}">
-                                    <a href="{{ route('anime.show', $anime->id) }}" class="hover:text-indigo-600">{{ $anime->title }}</a>
-                                </h3>
-                                <div class="flex items-center mb-2">
-                                    <span class="text-yellow-500 mr-1">★</span>
-                                    <span>{{ $anime->rating }}/10</span>
-                                </div>
-                                
-                                <div class="flex space-x-2">
-                                    <button class="update-status-btn bg-indigo-100 text-indigo-700 text-xs px-3 py-1 rounded hover:bg-indigo-200" data-id="{{ $watchlist->id }}" data-status="watching">ลองดูอีกครั้ง</button>
-                                    <button class="remove-btn bg-red-100 text-red-700 text-xs px-3 py-1 rounded hover:bg-red-200" data-id="{{ $watchlist->id }}">ลบออก</button>
-                                </div>
-                                
-                                @if($watchlist->notes)
-                                    <p class="mt-3 text-sm text-gray-600 italic">หมายเหตุ: {{ $watchlist->notes }}</p>
-                                @endif
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-12">
-                        <p class="text-gray-600">คุณยังไม่มีอนิเมะที่ dropped</p>
-                        <a href="{{ route('search.index') }}" class="text-indigo-600 hover:text-indigo-800 font-medium mt-4 inline-block">ค้นหาอนิเมะที่น่าสนใจ</a>
-                    </div>
-                @endif
-            </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-center py-12">
+                    <p class="text-gray-600">คุณยังไม่มีอนิเมะอยู่ในลิสต์ของคุณ</p>
+                    <a href="{{ route('search.index') }}" class="text-indigo-600 hover:text-indigo-800 font-medium mt-4 inline-block">ค้นหาอนิเมะที่น่าสนใจ</a>
+                </div>
+            @endif
         </main>
 
         <!-- Footer -->

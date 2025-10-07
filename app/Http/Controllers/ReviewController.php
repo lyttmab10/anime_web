@@ -40,6 +40,29 @@ class ReviewController extends Controller
         return redirect()->back()->with('success', 'รีวิวของคุณได้รับการบันทึกแล้ว');
     }
     
+    public function update(Request $request, Anime $anime)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'review' => 'nullable|string|max:1000',
+        ]);
+
+        $review = Review::where('user_id', Auth::id())
+            ->where('anime_id', $anime->id)
+            ->first();
+            
+        if ($review) {
+            $review->update([
+                'rating' => $request->rating,
+                'review' => $request->review,
+            ]);
+            
+            return redirect()->back()->with('success', 'รีวิวของคุณได้รับการอัปเดตแล้ว');
+        }
+        
+        return redirect()->back()->with('error', 'ไม่พบรีวิวของคุณ');
+    }
+    
     public function destroy(Anime $anime)
     {
         $review = Review::where('user_id', Auth::id())

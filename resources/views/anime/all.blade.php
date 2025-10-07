@@ -44,7 +44,7 @@
         <header class="bg-white shadow">
             <div class="container mx-auto px-4 py-6">
                 <div class="flex justify-between items-center">
-                    <h1 class="text-3xl font-bold text-indigo-700">AnimeHub</h1>
+                    <a href="{{ route('home') }}" class="text-3xl font-bold text-indigo-700">AnimeHub</a>
                     <nav class="flex items-center space-x-4">
                         <ul class="flex space-x-4 mr-6">
                             <li><a href="{{ route('home') }}" class="text-gray-700 hover:text-indigo-600 font-medium">หน้าแรก</a></li>

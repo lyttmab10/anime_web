@@ -18,28 +18,12 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         
-        // Get user's anime data
-        $watchlistStats = [
-            'watching' => $user->watchlists()->where('status', 'watching')->count(),
-            'completed' => $user->watchlists()->where('status', 'completed')->count(),
-            'planned' => $user->watchlists()->where('status', 'planned')->count(),
-            'on_hold' => $user->watchlists()->where('status', 'on_hold')->count(),
-            'dropped' => $user->watchlists()->where('status', 'dropped')->count(),
-        ];
-        
         $reviewCount = $user->reviews()->count();
-        $recentWatched = $user->watchlists()
-            ->where('status', 'completed')
-            ->with('anime')
-            ->orderBy('updated_at', 'desc')
-            ->limit(5)
-            ->get();
+        $userWithReviews = $user->load('reviews.anime');
         
         return view('profile.edit', [
-            'user' => $user,
-            'watchlistStats' => $watchlistStats,
+            'user' => $userWithReviews,
             'reviewCount' => $reviewCount,
-            'recentWatched' => $recentWatched,
         ]);
     }
 
