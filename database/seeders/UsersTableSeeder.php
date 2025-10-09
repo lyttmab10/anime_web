@@ -5,26 +5,48 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UsersTableSeeder extends Seeder
 {
     public function run()
     {
-        // ดึงข้อมูลจาก table ปัจจุบัน
-        $users = DB::connection('mysql')->table('users')->get();
-
-        foreach ($users as $user) {
-            // แปลง stdClass เป็น array
-            $userData = (array) $user;
-            
-            // hash password ใหม่เพื่อความปลอดภัย
-            $userData['password'] = Hash::make($user->password);
-            
-            // ลบรหัส id เดิมเพื่อให้ auto-increment ทำงาน
-            unset($userData['id']);
-            
-            // เพิ่มข้อมูลใหม่
-            DB::table('users')->insert($userData);
+        // Check if users table already has data to prevent duplicates
+        if (DB::table('users')->count() > 0) {
+            return;
         }
+
+        // Create some default users
+        $users = [
+            [
+                'name' => 'Admin User',
+                'email' => 'admin@example.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('password'),
+                'remember_token' => Str::random(10),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('password'),
+                'remember_token' => Str::random(10),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Anime Fan',
+                'email' => 'animefan@example.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('password'),
+                'remember_token' => Str::random(10),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
+
+        DB::table('users')->insert($users);
     }
 }

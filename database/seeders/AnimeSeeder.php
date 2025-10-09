@@ -13,6 +13,12 @@ class AnimeSeeder extends Seeder
      */
     public function run(): void
     {
+        // Check if animes table already has data to prevent duplicates
+        if (Anime::count() > 0) {
+            // If data exists, skip seeding
+            return;
+        }
+
         $animes = [
             // Trending/Popular Anime (15 records)
             [

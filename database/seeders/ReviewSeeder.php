@@ -14,6 +14,12 @@ class ReviewSeeder extends Seeder
      */
     public function run(): void
     {
+        // Check if reviews table already has data to prevent duplicates
+        if (Review::count() > 0) {
+            // If data exists, skip seeding
+            return;
+        }
+
         // Get all users and animes to create reviews for
         $users = User::all();
         $animes = Anime::all();
