@@ -16,8 +16,8 @@ class AnimeController extends Controller
             // Get one random anime for "Anime of the Day"
             $featuredAnime = Anime::inRandomOrder()->first();
             
-            // Get only trending anime for the grid (20 items)
-            $trendingAndRecentAnimes = Anime::where('is_trending', true)
+            // Get only anime with rating 9.0 or higher for the trending grid (20 items)
+            $trendingAndRecentAnimes = Anime::where('rating', '>=', 9.0)
                 ->orderByRaw("CASE 
                     WHEN title = 'ดาบพิฆาตอสูร' THEN 1
                     WHEN title = 'โจมตียักษ์' THEN 2
@@ -66,7 +66,6 @@ class AnimeController extends Controller
             'description' => 'nullable|string',
             'release_date' => 'nullable|date',
             'rating' => 'nullable|numeric|min:0|max:10',
-            'is_trending' => 'boolean',
             'studio' => 'nullable|string|max:255',
             'episodes' => 'nullable|integer',
             'genres' => 'nullable|array',

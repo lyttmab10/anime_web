@@ -24,7 +24,7 @@ class CheckAnimeDataCommand extends Command
             }
         }
         
-        $trendingCount = Anime::where('is_trending', true)->count();
+        $trendingCount = Anime::where('rating', '>=', 9.0)->count();
         $this->info("Trending anime count: {$trendingCount}");
     }
 }

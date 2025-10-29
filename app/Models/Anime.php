@@ -11,7 +11,6 @@ class Anime extends Model
         'description',
         'release_date',
         'rating',
-        'is_trending',
         'image_url',
         'studio',
         'season',
@@ -25,7 +24,6 @@ class Anime extends Model
 
     protected $casts = [
         'release_date' => 'date',
-        'is_trending' => 'boolean',
         'episodes' => 'integer',
         'genres' => 'array',
         'characters' => 'array',
@@ -58,7 +56,7 @@ class Anime extends Model
                 }
             })
             ->orderByRaw('CASE 
-                WHEN is_trending = true THEN 1
+                WHEN rating >= 9.0 THEN 1
                 ELSE 2
             END')
             ->orderBy('rating', 'desc')
@@ -77,7 +75,7 @@ class Anime extends Model
             
         if ($userReviewedAnime->isEmpty()) {
             // If no reviews from user, return trending anime
-            return self::where('is_trending', true)
+            return self::where('rating', '>=', 9.0)
                 ->orderBy('rating', 'desc')
                 ->limit($limit)
                 ->get();
@@ -103,7 +101,7 @@ class Anime extends Model
                 }
             })
             ->orderByRaw('CASE 
-                WHEN is_trending = true THEN 1
+                WHEN rating >= 9.0 THEN 1
                 ELSE 2
             END')
             ->orderBy('rating', 'desc')
@@ -115,5 +113,11 @@ class Anime extends Model
     public function watchlists()
     {
         return $this->hasMany(Watchlist::class);
+    }
+    
+    // Dynamic accessor to determine if anime is trending based on rating
+    public function getIsTrendingAttribute()
+    {
+        return $this->rating >= 9.0;
     }
 }

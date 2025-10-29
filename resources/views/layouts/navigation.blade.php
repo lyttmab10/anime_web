@@ -25,6 +25,11 @@
                     <x-nav-link :href="route('watchlist.index')" :active="request()->routeIs('watchlist.index')">
                         {{ __('ลิสต์ของฉัน') }}
                     </x-nav-link>
+                    @if(Auth::user()->is_admin)
+                    <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">
+                        {{ __('จัดการอนิเมะ') }}
+                    </x-nav-link>
+                    @endif
                     @endauth
                 </div>
             </div>
@@ -124,6 +129,11 @@
             <x-responsive-nav-link :href="route('watchlist.index')" :active="request()->routeIs('watchlist.index')">
                 {{ __('ลิสต์ของฉัน') }}
             </x-responsive-nav-link>
+            @if(Auth::user()->is_admin)
+            <x-responsive-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">
+                {{ __('จัดการอนิเมะ') }}
+            </x-responsive-nav-link>
+            @endif
             @endauth
         </div>
 

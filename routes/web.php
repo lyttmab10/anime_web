@@ -65,6 +65,16 @@ Route::middleware('auth')->group(function () {
         Route::put('/admin/news/{news}', [NewsController::class, 'update'])->name('news.admin.update');
         Route::delete('/admin/news/{news}', [NewsController::class, 'destroy'])->name('news.admin.destroy');
     });
+    
+    // Admin anime routes - only for users who can access admin panel
+    Route::middleware(['can:admin-access,App\Models\User'])->group(function () {
+        Route::get('/admin', [\App\Http\Controllers\AdminController::class, 'index'])->name('admin.index');
+        Route::get('/admin/create', [\App\Http\Controllers\AdminController::class, 'create'])->name('admin.create');
+        Route::post('/admin', [\App\Http\Controllers\AdminController::class, 'store'])->name('admin.store');
+        Route::get('/admin/{anime}/edit', [\App\Http\Controllers\AdminController::class, 'edit'])->name('admin.edit');
+        Route::put('/admin/{anime}', [\App\Http\Controllers\AdminController::class, 'update'])->name('admin.update');
+        Route::delete('/admin/{anime}', [\App\Http\Controllers\AdminController::class, 'destroy'])->name('admin.destroy');
+    });
 });
 
 // Image upload and display routes

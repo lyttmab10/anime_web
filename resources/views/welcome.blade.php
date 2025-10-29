@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
@@ -49,7 +49,7 @@
                                 <span class="mx-3 text-gray-600 dark:text-gray-300">•</span>
                                 <span class="text-gray-600 dark:text-gray-300">{{ $featuredAnime->release_date->format('Y') }}</span>
                             @endif
-                            @if($featuredAnime->is_trending)
+                            @if($featuredAnime->rating >= 9.0)
                                 <span class="ml-3 bg-red-500 text-white text-xs px-2 py-1 rounded">HOT</span>
                             @endif
                         </div>
@@ -85,7 +85,7 @@
                                 <span class="text-gray-500 dark:text-gray-400">No Image</span>
                             </div>
                         @endif
-                        @if($anime->is_trending)
+                        @if($anime->rating >= 9.0)
                             <span class="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">มาแรง</span>
                         @endif
                     </div>

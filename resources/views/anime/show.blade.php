@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="utf-8">
@@ -84,6 +84,9 @@
                             <li><a href="{{ route('search.index') }}" class="text-gray-700 hover:text-indigo-600 font-medium">ค้นหา</a></li>
                         </ul>
                         @auth
+                            @if(Auth::user()->is_admin)
+                                <a href="{{ route('admin.index') }}" class="text-gray-700 hover:text-indigo-600 font-medium mr-4">จัดการอนิเมะ</a>
+                            @endif
                             <div class="relative" x-data="{ open: false }">
                                 <button @click="open = !open" class="flex items-center space-x-1 text-gray-700 hover:text-indigo-600">
                                     <span>{{ Auth::user()->name }}</span>
@@ -94,6 +97,9 @@
                                 <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50" style="display: none;">
                                     <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">โปรไฟล์</a>
                                     <a href="{{ route('watchlist.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ลิสต์อนิเมะ</a>
+                                    @if(Auth::user()->is_admin)
+                                        <a href="{{ route('admin.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">จัดการอนิเมะ</a>
+                                    @endif
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
                                         <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ออกจากระบบ</button>
@@ -133,7 +139,7 @@
                             <div class="flex items-center mb-4">
                                 <span class="text-yellow-500 mr-2 text-xl">★</span>
                                 <span class="font-bold text-xl text-gray-800 dark:text-white">{{ $anime->rating }}/10</span>
-                                @if($anime->is_trending)
+                                @if($anime->rating >= 9.0)
                                     <span class="ml-4 bg-red-500 text-white text-sm px-3 py-1 rounded-full">มาแรง</span>
                                 @endif
                             </div>
@@ -437,7 +443,7 @@
                                 <span class="text-gray-500 dark:text-gray-400">No Image</span>
                             </div>
                         @endif
-                        @if($similar->is_trending)
+                        @if($similar->rating >= 9.0)
                             <span class="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">มาแรง</span>
                         @endif
                     </div>
